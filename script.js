@@ -7,13 +7,14 @@ const cancelButton = document.querySelector(".cancelButton");
 const taskInput = document.querySelector("#taskInput");
 const dateInput = document.querySelector("#dateInput");
 const tagInput = document.querySelector("#tagsInput");
-const tagList = document.querySelector(".creationTagsList");
+const createSectionTagList = document.querySelector(".TagsList");
 
+dateInput.valueAsDate = new Date();
 //* Sections
 const taskCreatingSection = document.querySelector(".creatingSection");
 const topSection = document.querySelector(".topSection");
 
-const taskList = document.querySelector(".taskListView ul");
+const taskList = document.querySelector(".tasksList");
 
 //* Events
 createButton.addEventListener("click", showAndHideCreationSection);
@@ -22,13 +23,21 @@ cancelButton.addEventListener("click", showAndHideCreationSection);
 const tagsList = [];
 
 confirmButton.addEventListener("click", () => {
+  if (tagsList.length == 0) {
+    tagsList.push(tagInput.value);
+  }
+
   createTask(taskInput.value, dateInput.value, tagsList);
+  showAndHideCreationSection();
 });
 
 tagInput.addEventListener("keydown", (e) => {
-  if (e.code == "Enter") {
+  if (e.code == "Enter" || e.keyCode == 13) {
     tagsList.push(tagInput.value);
-    createTag(tagInput.value);
+
+    const singleTag = createTaskTags(tagInput.value);
+    createSectionTagList.append(singleTag);
+
     tagInput.value = "";
   }
 });
@@ -41,51 +50,33 @@ function showAndHideCreationSection() {
   }
 }
 
-function createTag(tagName) {
-  let tagItem = document.createElement("li");
-  let tagDiv = document.createElement("div");
-  tagDiv.classList.add("tagContainer");
-  tagDiv.innerText = tagName;
-  tagItem.append(tagDiv);
-  tagList.append(tagItem);
+function createTask(title, date, tags) {
+  const taskLi = createSingleTaskItem(title, date, tags);
+  taskList.append(taskLi);
+  clareInputs();
 }
 
-function createTask(title, date, tags) {
-  const li = document.createElement("li");
+function createSingleTaskItem(title, date, tags) {
+  const taskLi = document.createElement("li");
+
+  // * Task Container That holds all task Information
   const taskContainer = document.createElement("div");
-  taskContainer.classList.add("taskItem");
+  taskContainer.classList.add("taskContainer");
 
-  const checkBox = createCheckBox();
-  taskContainer.append(checkBox);
+  // * Task CheckBox
+  const taskCheckBox = createCheckBox();
+  taskContainer.append(taskCheckBox);
 
-  //* Task Details
-  const taskDetails = document.createElement("div");
-  taskDetails.classList.add("taskDetails");
-  const taskTitle = document.createElement("h4");
-  const taskDate = document.createElement("h5");
-  taskTitle.innerText = title;
-  taskDate.innerText = date;
-  taskDetails.append(taskTitle);
-  taskDetails.append(taskDate);
+  // * Task Title and date
+  const taskDetails = createTaskDetails(title, date);
   taskContainer.append(taskDetails);
 
-  //* Tags Ul
-  const taskUl = document.createElement("ul");
-  taskUl.classList.add("creationTagsList");
+  // * taskTags
+  const taskTags = createTags(tags);
+  taskContainer.append(taskTags);
 
-  tags.forEach((tag) => {
-    const taskLI = document.createElement("li");
-    const tagDiv = document.createElement("div");
-    tagDiv.classList.add("tagContainer");
-    tagDiv.innerText = tag;
-    taskLI.append(tagDiv);
-    taskUl.append(taskLI);
-  });
-  taskContainer.append(taskUl);
-  li.append(taskContainer);
-  taskList.append(li);
-
-  clareInputs();
+  taskLi.append(taskContainer);
+  return taskLi;
 }
 
 function createCheckBox() {
@@ -95,9 +86,49 @@ function createCheckBox() {
   return checkBox;
 }
 
+function createTaskDetails(title, date) {
+  const taskDetails = document.createElement("div");
+  taskDetails.classList.add("taskDetails");
+  const taskTitle = document.createElement("h4");
+  taskTitle.innerText = title;
+  taskDetails.append(taskTitle);
+
+  const taskDate = document.createElement("p");
+  taskDate.innerText = date;
+  taskDetails.append(taskDate);
+
+  return taskDetails;
+}
+
+function createTags(tags) {
+  const tagsUl = document.createElement("ul");
+  tagsUl.classList.add("taskTagsUL");
+
+  console.log(tags);
+
+  tags.forEach((element) => {
+    console.log(element);
+    const tagItem = createTaskTags(element);
+
+    tagsUl.append(tagItem);
+  });
+
+  return tagsUl;
+}
+
+function createTaskTags(tagName) {
+  let tagItem = document.createElement("li");
+  let tagDiv = document.createElement("div");
+  tagDiv.classList.add("tagContainer");
+  tagDiv.innerText = tagName;
+  tagItem.append(tagDiv);
+  return tagItem;
+}
+
 function clareInputs() {
   taskInput.value = "";
-  dateInput.value = "";
+  tagInput.value = "";
 
-  tagList.innerHTML = "";
+  createSectionTagList.innerHTML = "";
+  tagsList.pop();
 }
