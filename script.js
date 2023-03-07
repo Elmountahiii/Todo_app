@@ -18,7 +18,10 @@ const taskList = document.querySelector(".tasksList");
 
 //* Events
 createButton.addEventListener("click", showAndHideCreationSection);
-cancelButton.addEventListener("click", showAndHideCreationSection);
+cancelButton.addEventListener("click", () => {
+  clareInputs();
+  showAndHideCreationSection();
+});
 
 const tagsList = [];
 
