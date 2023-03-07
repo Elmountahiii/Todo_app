@@ -26,8 +26,10 @@ confirmButton.addEventListener("click", () => {
   if (tagsList.length == 0) {
     tagsList.push(tagInput.value);
   }
+  saveTaskToLocalStorage(taskInput.value, dateInput.value, tagsList);
 
   createTask(taskInput.value, dateInput.value, tagsList);
+
   showAndHideCreationSection();
 });
 
@@ -42,12 +44,24 @@ tagInput.addEventListener("keydown", (e) => {
   }
 });
 
+document.addEventListener("DOMContentLoaded", () => {
+  const localTasks = getTaskFromLocalStorage();
+
+  for (const task of localTasks) {
+    createTask(task.taskTitle, task.taskDate, task.taskTags);
+  }
+});
+
 function showAndHideCreationSection() {
   if (getComputedStyle(taskCreatingSection).display === "none") {
     taskCreatingSection.style.display = "flex";
   } else {
     taskCreatingSection.style.display = "none";
   }
+}
+
+function getTaskFromLocalStorage() {
+  return JSON.parse(localStorage.getItem("unCompleteTaskList") || "[]");
 }
 
 function createTask(title, date, tags) {
@@ -76,7 +90,26 @@ function createSingleTaskItem(title, date, tags) {
   taskContainer.append(taskTags);
 
   taskLi.append(taskContainer);
+
   return taskLi;
+}
+
+function saveTaskToLocalStorage(title, date, tags) {
+  const tasksFromLocalStorage = getTaskFromLocalStorage();
+
+  const taskObject = {
+    id: Math.floor(Math.random() * 1000),
+    taskTitle: title,
+    taskDate: date,
+    taskTags: tags,
+  };
+
+  tasksFromLocalStorage.push(taskObject);
+
+  localStorage.setItem(
+    "unCompleteTaskList",
+    JSON.stringify(tasksFromLocalStorage)
+  );
 }
 
 function createCheckBox() {
@@ -104,10 +137,7 @@ function createTags(tags) {
   const tagsUl = document.createElement("ul");
   tagsUl.classList.add("taskTagsUL");
 
-  console.log(tags);
-
   tags.forEach((element) => {
-    console.log(element);
     const tagItem = createTaskTags(element);
 
     tagsUl.append(tagItem);
