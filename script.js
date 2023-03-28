@@ -10,14 +10,18 @@ const tagInput = document.querySelector("#tagsInput");
 const createSectionTagList = document.querySelector(".TagsList");
 
 dateInput.valueAsDate = new Date();
+
 //* Sections
 const taskCreatingSection = document.querySelector(".creatingSection");
 const topSection = document.querySelector(".topSection");
 
 const taskList = document.querySelector(".tasksList");
 
+const completeTaskList = document.querySelector(".completeTasksList");
+
 //* Events
 createButton.addEventListener("click", showAndHideCreationSection);
+
 cancelButton.addEventListener("click", () => {
   clareInputs();
   showAndHideCreationSection();
@@ -31,7 +35,7 @@ confirmButton.addEventListener("click", () => {
   }
   saveTaskToLocalStorage(taskInput.value, dateInput.value, tagsList);
 
-  createTask(taskInput.value, dateInput.value, tagsList);
+  createTask(taskInput.value, dateInput.value, tagsList, taskList);
 
   showAndHideCreationSection();
 });
@@ -48,11 +52,11 @@ tagInput.addEventListener("keydown", (e) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  const localTasks = getTaskFromLocalStorage();
+  const unCompleteTaskList = getTaskFromLocalStorage("unCompleteTaskList");
+  const CompleteTaskList = getTaskFromLocalStorage("CompleteTaskList");
 
-  for (const task of localTasks) {
-    createTask(task.taskTitle, task.taskDate, task.taskTags);
-  }
+  createUnCompleteTaskList(unCompleteTaskList);
+  createCompleteTaskList(CompleteTaskList);
 });
 
 function showAndHideCreationSection() {
@@ -63,17 +67,23 @@ function showAndHideCreationSection() {
   }
 }
 
-function getTaskFromLocalStorage() {
-  return JSON.parse(localStorage.getItem("unCompleteTaskList") || "[]");
+function getTaskFromLocalStorage(dataBaseName) {
+  return JSON.parse(localStorage.getItem(dataBaseName) || "[]");
 }
 
-function createTask(title, date, tags) {
-  const taskLi = createSingleTaskItem(title, date, tags);
-  taskList.append(taskLi);
+function createTask(title, date, tags, task, taskChecked, taskEnabled) {
+  const taskLi = createSingleTaskItem(
+    title,
+    date,
+    tags,
+    taskChecked,
+    taskEnabled
+  );
+  task.append(taskLi);
   clareInputs();
 }
 
-function createSingleTaskItem(title, date, tags) {
+function createSingleTaskItem(title, date, tags, taskChecked, taskEnabled) {
   const taskLi = document.createElement("li");
 
   // * Task Container That holds all task Information
@@ -81,7 +91,7 @@ function createSingleTaskItem(title, date, tags) {
   taskContainer.classList.add("taskContainer");
 
   // * Task CheckBox
-  const taskCheckBox = createCheckBox();
+  const taskCheckBox = createCheckBox(taskChecked, taskEnabled);
   taskContainer.append(taskCheckBox);
 
   // * Task Title and date
@@ -98,7 +108,7 @@ function createSingleTaskItem(title, date, tags) {
 }
 
 function saveTaskToLocalStorage(title, date, tags) {
-  const tasksFromLocalStorage = getTaskFromLocalStorage();
+  const tasksFromLocalStorage = getTaskFromLocalStorage("unCompleteTaskList");
 
   const taskObject = {
     id: Math.floor(Math.random() * 1000),
@@ -115,10 +125,14 @@ function saveTaskToLocalStorage(title, date, tags) {
   );
 }
 
-function createCheckBox() {
+function createCheckBox(taskChecked, taskEnabled) {
   const checkBox = document.createElement("input");
   checkBox.setAttribute("type", "checkbox");
   checkBox.setAttribute("id", "Taskcheckbox");
+  checkBox.setAttribute("onclick", "changing(event)");
+  if (taskChecked == true && taskEnabled) {
+    checkBox.setAttribute("checked", "checked");
+  }
   return checkBox;
 }
 
@@ -164,4 +178,64 @@ function clareInputs() {
 
   createSectionTagList.innerHTML = "";
   tagsList.pop();
+}
+
+function changing(event) {
+  const unCompleteTasks = getTaskFromLocalStorage("unCompleteTaskList");
+  const completedTasks = getTaskFromLocalStorage("CompleteTaskList");
+  const containerClassName =
+    event.target.parentNode.parentNode.parentNode.classList.value;
+
+  if (containerClassName == "tasksList") {
+    const taskTitle = event.target.parentNode.children[1].children[0].innerText;
+
+    const taskOBJ = unCompleteTasks.find((task) => {
+      return task.taskTitle == taskTitle;
+    });
+
+    const newUnCompleteTaskList = unCompleteTasks.filter((task) => {
+      return task.id != taskOBJ.id;
+    });
+
+    completedTasks.push(taskOBJ);
+
+    alert(completeTaskList.length);
+
+    localStorage.setItem(
+      "unCompleteTaskList",
+      JSON.stringify(newUnCompleteTaskList)
+    );
+
+    localStorage.setItem("CompleteTaskList", JSON.stringify(completedTasks));
+
+    createCompleteTaskList(getTaskFromLocalStorage("CompleteTaskList"));
+
+    event.target.parentNode.children[1].parentNode.remove();
+  }
+}
+
+function createUnCompleteTaskList(list) {
+  for (const task of list) {
+    createTask(
+      task.taskTitle,
+      task.taskDate,
+      task.taskTags,
+      taskList,
+      false,
+      false
+    );
+  }
+}
+function createCompleteTaskList(list) {
+  completeTaskList.innerHTML = "";
+  for (const task of list) {
+    createTask(
+      task.taskTitle,
+      task.taskDate,
+      task.taskTags,
+      completeTaskList,
+      true,
+      true
+    );
+  }
 }

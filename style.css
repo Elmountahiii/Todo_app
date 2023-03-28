@@ -46,6 +46,7 @@ body {
 
 input[type="date"] {
     width: 100%;
+    -webkit-appearance: none;
 }
 
 .topSection {
@@ -178,12 +179,22 @@ li {
     flex-grow: 1;
 }
 
+.pending {
+    margin-top: 1rem;
+    color: red;
+}
+
+.complete {
+    margin-top: 1rem;
+    color: #4BB543;
+}
+
 @media (max-width:600px) {
 
 
     .mainContainer {
         width: 100%;
-
+        min-height: fit-content;
         margin: 0 1rem;
     }
 
