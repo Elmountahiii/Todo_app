@@ -199,8 +199,6 @@ function changing(event) {
 
     completedTasks.push(taskOBJ);
 
-    alert(completeTaskList.length);
-
     localStorage.setItem(
       "unCompleteTaskList",
       JSON.stringify(newUnCompleteTaskList)
